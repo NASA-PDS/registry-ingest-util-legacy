@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<harvest>
+  <directories>
+    <path>{{root}}</path>
+    <fileFilter>
+      <include>*.xml</include>
+    </fileFilter>
+    <directoryFilter>
+      {{#subdirs}}
+      <exclude>{{name}}</exclude>
+      {{/subdirs}}
+    </directoryFilter>
+  </directories>
+
+<fileInfo>
+  <blobStorage type="embedded" />
+</fileInfo>
+<fileRef/>
+<autogenFields />
+<internalRefs prefix="ref_">
+  <lidvid convertToLid="false" keep="true" />
+</internalRefs>
+</harvest>
