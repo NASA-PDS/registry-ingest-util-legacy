@@ -87,8 +87,8 @@ def main():
         if contains_xml(files):
             dirs_to_ingest.append(root)
         n_dir+=1
-        if n_dir>3:
-            break
+        #if n_dir>3:
+        #    break
     logger.info(f"launch processes for {len(dirs_to_ingest)} directories")
     with Pool(7) as p:
         p.map(ingest, dirs_to_ingest)
