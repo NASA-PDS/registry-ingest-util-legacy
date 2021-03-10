@@ -12,7 +12,11 @@ Utility script to load data in the PDS registry in parallel using the pds-regist
 
     pip install -r requirements.txt
 
-Update path in pds/registry/ingest.py
+Copy config template and update it
+
+    cp pds_registry_ingest.ini.default pds_registry_ingest.ini
+
+Edit the new conf file
 
 Run:
 

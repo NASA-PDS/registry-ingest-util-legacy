@@ -1,20 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <harvest>
-  <directories>
-    <path>{{root}}</path>
-    <fileFilter>
-      <include>*.xml</include>
-    </fileFilter>
-    <directoryFilter>
-      {{#subdirs}}
-      <exclude>{{name}}</exclude>
-      {{/subdirs}}
-    </directoryFilter>
-  </directories>
-
-<fileInfo>
-  <blobStorage type="embedded" />
+   <bundles>
+	   <bundle dir="{{root}}" />
+  </bundles>
+<fileInfo processDataFiles="true" storeLabels="true">
+    <!-- UPDATE HERE with you own local path and base url where pds4 archive are published -->
+    <fileRef replacePrefix="/data/local/starbase/data/pds4/test-data/registry/" with="https://pds-gamma.jpl.nasa.gov/data/pds4/test-data/registry/" />
 </fileInfo>
 <fileRef/>
 <autogenFields />

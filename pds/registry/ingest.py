@@ -5,19 +5,25 @@ import logging
 from tqdm import tqdm
 from multiprocessing import Pool
 import shutil
+import re
+import configparser
+
+config = configparser.ConfigParser()
+config.read(['pds_registry_ingest.ini.default',
+    'pds_registry_ingest.ini'])
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-HARVEST_TEMPLATE = 'pds/registry/harvest_template.mustache'
-CONF_DIR = 'tmp/harvest_conf'
-HARVEST_OUT_DIR = 'tmp/harvest_out'
-JAVA_HOME = '/usr/lib/jvm/java-11/'
-#HARVEST_DIR = '/data/home/pds4/registry-ingest/harvest/harvest-3.3.0-SNAPSHOT'
-HARVEST_DIR = '/data/home/pds4/registry-ingest.bkp/pds-registry-app/harvest'
-#REGISTRY_MGR_DIR = '/data/home/pds4/registry-ingest/registry-mgr/registry-manager-4.0.0-SNAPSHOT'
-REGISTRY_MGR_DIR = '/data/home/pds4/registry-ingest.bkp/pds-registry-app/registry-manager'
-ELASTIC_SEARCH_URL = 'http://172.16.8.57:9200'
+HARVEST_TEMPLATE = config.get('env', 'HARVEST_TEMPLATE')
+CONF_DIR = config.get('env', 'CONF_DIR')
+HARVEST_OUT_DIR = config.get('env', 'HARVEST_OUT_DIR') 
+JAVA_HOME = config.get('env', 'JAVA_HOME')
+HARVEST_DIR = config.get('env', 'HARVEST_DIR') 
+REGISTRY_MGR_DIR = config.get('env', 'REGISTRY_MGR_DIR')
+ELASTIC_SEARCH_URL =  config.get('elastic', 'url')
+ELASTIC_AUTH_FILE =  config.get('elastic', 'auth-file')
+
 
 def create_harvest_conf(root):
     renderer = pystache.Renderer()
@@ -45,7 +51,9 @@ def harvest(harvest_conf_file):
 
 def load_data_to_registry(harvest_result):
     registry_bin = os.path.join(REGISTRY_MGR_DIR, 'bin', 'registry-manager')
-    registry_cmd = [registry_bin, 'load-data', '-file', harvest_result, '-es', ELASTIC_SEARCH_URL, '>>tmp/registry.log', ]
+    registry_cmd = [registry_bin, 'load-data', '-dir', harvest_result, '-es', ELASTIC_SEARCH_URL, '>>tmp/registry.log', ]
+    if ELASTIC_AUTH_FILE:
+        registry_cmd.extend(['-auth', ELASTIC_AUTH_FILE])
     registry_cmd_str = ' '.join(registry_cmd)
     logger.debug('load data to registry with command {registry_cmd_str}')
     os.system(registry_cmd_str)
@@ -61,9 +69,10 @@ def ingest(root):
     load_data_to_registry(harvest_result) 
 
 
-def contains_xml(files):
+def contains_bundle_xml(files):
+    prog = re.compile(r'.*bundle.*.xml')
     for file in files:
-        if file.endswith('.xml'):
+        if prog.match(file):
             return True
     return False
 
@@ -84,11 +93,12 @@ def main():
     dirs_to_ingest = []
     for root, _, files in os.walk(args.root, topdown=False):
         logger.debug(f'process dir {root}')
-        if contains_xml(files):
+        if contains_bundle_xml(files):
+            print(root)
             dirs_to_ingest.append(root)
         n_dir+=1
-        if n_dir>3:
-            break
+        #if n_dir>3:
+        #    break
     logger.info(f"launch processes for {len(dirs_to_ingest)} directories")
     with Pool(7) as p:
         p.map(ingest, dirs_to_ingest)
