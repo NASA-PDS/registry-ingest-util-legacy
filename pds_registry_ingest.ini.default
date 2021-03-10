@@ -1,0 +1,11 @@
+[env]
+HARVEST_TEMPLATE = pds/registry/harvest_template.mustache
+CONF_DIR = tmp/harvest_conf
+HARVEST_OUT_DIR = tmp/harvest_out
+JAVA_HOME = /usr/lib/jvm/java-11/
+HARVEST_DIR = harvest aboslute path
+REGISTRY_MGR_DIR = registry manager absolute path
+
+[elastic]
+url =  elastic url and port, e.g. https://...:9200
+auth-file = es-auth.conf
